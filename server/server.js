@@ -16,8 +16,6 @@ import { StaticRouter } from "react-router-dom";
 // console.log('RUNING RIBBIT SERVER')
 
 const appDir = process.argv[3]
-console.log('=====ARGS======', appDir);
-
 
 //import their app.js file
 const ribbitConfig = require(path.join(appDir, '/ribbit.config.js'));
