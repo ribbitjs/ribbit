@@ -9,12 +9,19 @@ const renderToString = reactDomServer.renderToString;
 
 const eventEmitter = new events.EventEmitter();
 
+const { appDirectory } = require('../lib/build');
+
 import { StaticRouter } from "react-router-dom";
 
-console.log('RUNING RIBBIT SERVER')
+// console.log('RUNING RIBBIT SERVER')
+
+const appDir = process.argv[3]
+console.log('=====ARGS======', appDir);
+
 
 //import their app.js file
-const ribbitConfig = require(path.join(process.cwd(), 'ribbit.config.js'));
+const ribbitConfig = require(path.join(appDir, '/ribbit.config.js'));
+console.log(ribbitConfig)
 //run express static on their bundle js file
 
 app.get('/', (req, res) => {
