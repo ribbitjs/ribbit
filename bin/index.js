@@ -1,9 +1,17 @@
 #!/usr/bin/env node
 
 const program = require('commander');
+
+program.version('1.0.0').description('Standalone serverside rendering CLI tool');
 const commands = require('../lib/index');
 
 program.version('1.0.0').description('Standalone server side rendering CLI tool');
+
+program
+  .command('build')
+  .alias('b')
+  .description('Generate your static files')
+  .action(commands.build);
 
 /*
 // Command templte:
