@@ -4,8 +4,7 @@
   "description": "Standalone CLI app for easy static site generation.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel server -d build",
-    "start-server": "node ./build/server.js"
+    "start-server": "babel-node server/server.js"
   },
   "main": "lib/index.js",
   "bin": "./bin/index.js",
@@ -30,10 +29,13 @@
     "chalk": "^2.4.2",
     "@babel/core": "^7.2.2",
     "@babel/node": "^7.2.2",
+    "@babel/parser": "^7.2.3",
     "@babel/polyfill": "^7.2.5",
     "@babel/preset-env": "^7.2.3",
     "@babel/preset-react": "^7.0.0",
     "@babel/register": "^7.0.0",
+    "@babel/traverse": "^7.2.3",
+    "babel-traverse": "^6.26.0",
     "commander": "^2.19.0",
     "express": "^4.16.4",
     "fs": "0.0.1-security",
