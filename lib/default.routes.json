@@ -1,0 +1,11 @@
+[
+  {
+    "route": "/",
+    "assetName": "index",
+    "component": "./Home.js"
+  },
+  {
+    "route": "/about/contact",
+    "component": "./Contact.js"
+  }
+]

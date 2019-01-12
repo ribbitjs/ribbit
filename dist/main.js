@@ -1,4 +1,4 @@
-/******/ (function(modules) { // webpackBootstrap
+(function(e, a) { for(var i in a) e[i] = a[i]; }(exports, /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -696,14 +696,14 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var reac
 /***/ }),
 
 /***/ 0:
-/*!****************************************************!*\
-  !*** multi ../webpack-games/src/components/App.js ***!
-  \****************************************************/
+/*!**********************************************************************!*\
+  !*** multi ../webpack-games/ ../webpack-games/src/components/App.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("module.exports = __webpack_require__(/*! /home/marlon/Desktop/webpack-games/src/components/App.js */\"../webpack-games/src/components/App.js\");\n\n\n//# sourceURL=webpack:///multi_../webpack-games/src/components/App.js?");
+eval("!(function webpackMissingModule() { var e = new Error(\"Cannot find module '/home/marlon/Desktop/webpack-games/'\"); e.code = 'MODULE_NOT_FOUND'; throw e; }());\nmodule.exports = __webpack_require__(/*! /home/marlon/Desktop/webpack-games/src/components/App.js */\"../webpack-games/src/components/App.js\");\n\n\n//# sourceURL=webpack:///multi_../webpack-games/_../webpack-games/src/components/App.js?");
 
 /***/ })
 
-/******/ });
+/******/ })));

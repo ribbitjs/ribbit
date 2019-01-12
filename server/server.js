@@ -2,46 +2,70 @@ const express = require('express');
 const app = new express();
 const fs = require('fs');
 const path = require('path');
+const { exec } = require('child_process');
 
 const React = require('react');
-const reactDomServer = require('react-dom/server');
-const renderToString = reactDomServer.renderToString;
-
+const { renderToString } = require('react-dom/server');
 import { StaticRouter } from 'react-router-dom';
 
-const { exec } = require('child_process');
 const appDir = process.argv[2];
 const ribbitConfig = require(path.join(appDir, '/ribbit.config.js'));
 
-import App from '../dist/AppBuildFolder/App.js';
-console.log(<App />);
+// import App from '../dist/App.js';
+//TO DO - make this require dynamic
+console.log('====appdir===', appDir);
+console.log('======appfile', ribbitConfig.app.slice(1));
+const webpackChild = exec(`npx webpack ${appDir} ${appDir}${ribbitConfig.app.slice(1)}`, () => {
+  console.log('Rebuilt user app locally');
+  // const App = require(`../dist/App.js`).default;
+});
 
-app.get('/*', (req, res) => {
+webpackChild.on('data', data => {
+  stdout.write(data);
+});
+
+// const App = require(`${appDir}/${ribbitConfig.appFile}`).default;
+
+//pass route an array of all routes from ribbit.routes
+app.get(['/', '/two'], (req, res) => {
   const context = {};
-  const url = req.url;
+  let url = req.url;
+
   const jsx = (
     <StaticRouter context={context} location={url}>
       <App />
     </StaticRouter>
   );
+
+  //turn this into render to stream
+  //this is where jsx turns into html
   const reactDom = renderToString(jsx);
 
+  //injects reactDom into html template
   const html = htmlTemplate(reactDom);
 
-  console.log('====');
-  console.log(html);
-  console.log('====');
+  //replaces slashes in the route with x's so we dont mess up file structure
+  //can change x to whatever we wantf
+  //test out creating file structure
+  // const file = url.replace(/\//g, 'x');
 
-  const file = url.replace(/\//g, 'x');
+  //write file to their file system
+  // dynamic file extensions for html
+  if (url === '/') url = 'App';
+  else url = url.slice(1);
 
-  fs.writeFile(`${file}.html`, html, err => {
+  fs.writeFile(`${url}.html`, html, err => {
     if (err) throw err;
-    res.sendFile(path.join(__dirname + `/../${file}.html`));
+    //send file is just for our testing purposes
+    res.sendFile(path.join(__dirname + `/../${url}.html`));
   });
 });
 
-app.use(express.static(ribbitConfig.buildFolder));
+app.use(express.static(ribbitConfig.root));
 
+// File name for bundle import needs to be dynamic (user input)
+// User can choose whether to split JS imports per route or
+// only use the main bundle
 function htmlTemplate(reactDom) {
   return `
         <!DOCTYPE html>
@@ -53,15 +77,11 @@ function htmlTemplate(reactDom) {
 
         <body>
             <div id="app">${reactDom}</div>
-            <script src="./dist/main.js"></script>
+            <script src="${ribbitConfig.buildFolder}/main.js"></script>
         </body>
         </html>
     `;
 }
-
-// app.get('/', (req, res) => {
-//   res.send('ribbit');
-// });
 
 app.listen(4000, () => {
   console.log('listening on port 4000');
