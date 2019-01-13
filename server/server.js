@@ -9,25 +9,59 @@ const { renderToString } = require('react-dom/server');
 import { StaticRouter } from 'react-router-dom';
 
 const appDir = process.argv[2];
+const ribbitRoutes = require(path.join(appDir, '/ribbit.routes.json'));
 const ribbitConfig = require(path.join(appDir, '/ribbit.config.js'));
+const appFile = `${appDir}/${ribbitConfig.app.slice(2)}`;
+const webpackCommand = `npx webpack App=${appFile} `;
 
-// import App from '../dist/App.js';
-//TO DO - make this require dynamic
-console.log('====appdir===', appDir);
-console.log('======appfile', ribbitConfig.app.slice(1));
-const webpackChild = exec(`npx webpack ${appDir} ${appDir}${ribbitConfig.app.slice(1)}`, () => {
+function buildCliCommand(command, routes) {
+  routes.forEach(e => {
+    if (e.assetName) {
+      const pair = `${e.assetName}=${appDir}${e.component.slice(1)} `;
+      command += pair;
+    } else {
+      if (e.route === '/') {
+        const pair = `Home=${appDir}${e.component.slice(1)} `;
+        command += pair;
+      } else {
+        const pair = `${e.route}=${appDir}${e.component.slice(1)} `;
+        command += pair;
+      }
+    }
+  });
+  return command;
+}
+
+function buildRouteArray(routes) {
+  const arr = [];
+  routes.forEach(e => {
+    arr.push(e.route);
+  });
+  return arr;
+}
+
+const routeArray = buildRouteArray(ribbitRoutes);
+const cliCommand = buildCliCommand(webpackCommand, ribbitRoutes);
+
+const webpackChild = exec(`${cliCommand}`, () => {
   console.log('Rebuilt user app locally');
-  // const App = require(`../dist/App.js`).default;
 });
 
 webpackChild.on('data', data => {
   stdout.write(data);
 });
+webpackChild.stderr.on('data', data => {
+  process.stdout.write(data);
+});
 
-// const App = require(`${appDir}/${ribbitConfig.appFile}`).default;
+webpackChild.stderr.on('exit', data => {
+  process.stdout.write('im done');
+});
 
 //pass route an array of all routes from ribbit.routes
-app.get(['/', '/two'], (req, res) => {
+app.get(routeArray, (req, res) => {
+  //bring in App from the file that ribbit webpack created
+  const App = require(`../dist/App.js`).default;
   const context = {};
   let url = req.url;
 
@@ -51,13 +85,14 @@ app.get(['/', '/two'], (req, res) => {
 
   //write file to their file system
   // dynamic file extensions for html
-  if (url === '/') url = 'App';
+  if (url === '/') url = 'Home';
   else url = url.slice(1);
 
-  fs.writeFile(`${url}.html`, html, err => {
+  fs.writeFile(`${appDir}/ribbit.statics/${url}.html`, html, err => {
     if (err) throw err;
     //send file is just for our testing purposes
-    res.sendFile(path.join(__dirname + `/../${url}.html`));
+    // res.sendFile(path.join(__dirname + `/../${url}.html`));
+    res.send('built static HTML');
   });
 });
 
