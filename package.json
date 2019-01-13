@@ -21,12 +21,13 @@
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-react": "^7.12.3",
-    "prettier": "^1.15.3",
-    "undefined": "^0.1.0"
+    "prettier": "^1.15.3"
   },
   "dependencies": {
+    "chalk": "^2.4.2",
     "commander": "^2.19.0",
     "fs": "0.0.1-security",
+    "inquirer": "^6.2.1",
     "lodash": "^4.17.11"
   }
 }
