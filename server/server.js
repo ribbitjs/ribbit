@@ -1,123 +1,82 @@
-const express = require('express');
-const app = new express();
-const fs = require('fs');
-const path = require('path');
-const { exec } = require('child_process');
-
-const React = require('react');
-const { renderToString } = require('react-dom/server');
+// react imports
 import { StaticRouter } from 'react-router-dom';
 
+const React = require('react');
+
+const express = require('express');
+const path = require('path');
+const { exec } = require('child_process');
+require('isomorphic-fetch');
+
+const app = express();
+
+// User app directory is received from arguments
 const appDir = process.argv[2];
 const ribbitRoutes = require(path.join(appDir, '/ribbit.routes.json'));
 const ribbitConfig = require(path.join(appDir, '/ribbit.config.js'));
 const appFile = `${appDir}/${ribbitConfig.app.slice(2)}`;
+
+// Helper functions imports
+const { buildCliCommand } = require('./helpers/buildCliCommand');
+const { sendFetches } = require('./helpers/sendFetches');
+
+// Middleware imports
+const { htmlTemplate } = require('./controllers/htmlTemplate');
+const { writeFile } = require('./controllers/writeFile');
+
+const routeArray = ribbitRoutes.map(el => el.route);
 const webpackCommand = `npx webpack App=${appFile} `;
+const cliCommand = buildCliCommand(webpackCommand, ribbitRoutes, appDir);
 
-function buildCliCommand(command, routes) {
-  routes.forEach(e => {
-    if (e.assetName) {
-      const pair = `${e.assetName}=${appDir}${e.component.slice(1)} `;
-      command += pair;
-    } else {
-      if (e.route === '/') {
-        const pair = `Home=${appDir}${e.component.slice(1)} `;
-        command += pair;
-      } else {
-        const pair = `${e.route}=${appDir}${e.component.slice(1)} `;
-        command += pair;
-      }
-    }
-  });
-  return command;
-}
+app.get(
+  routeArray,
+  (req, res, next) => {
+    const App = require(`../dist/App.js`).default;
+    const context = {};
+    let { url } = req;
 
-function buildRouteArray(routes) {
-  const arr = [];
-  routes.forEach(e => {
-    arr.push(e.route);
-  });
-  return arr;
-}
+    const jsx = (
+      <StaticRouter context={context} location={url}>
+        <App />
+      </StaticRouter>
+    );
 
-const routeArray = buildRouteArray(ribbitRoutes);
-const cliCommand = buildCliCommand(webpackCommand, ribbitRoutes);
+    if (url === '/') url = '/Home';
+    res.locals.appDir = appDir;
+    res.locals.url = url;
+    res.locals.jsx = jsx;
+    next();
+  },
+  htmlTemplate,
+  writeFile
+);
 
+app.use(express.static(ribbitConfig.root));
+
+// Create a new child process, that executes the passed in 'cli command'
+// Child starts webpack and copies components over to the Ribbit directory
 const webpackChild = exec(`${cliCommand}`, () => {
-  console.log('Rebuilt user app locally');
+  // console.log('Rebuilt user app locally');
+  // start server in callback (after webpack finishes running)
+  app.listen(4000, () => {
+    console.log('Listening on port 4000');
+    // Send fetch request to all routes
+    const fetchArray = sendFetches(ribbitRoutes, 4000);
+    Promise.all(fetchArray)
+      .then(data => {
+        process.kill(process.pid, 'SIGINT');
+      })
+      .catch();
+  });
 });
 
+// We can remove these next 3 functions in production
 webpackChild.on('data', data => {
-  stdout.write(data);
+  process.stdout.write(data);
 });
 webpackChild.stderr.on('data', data => {
   process.stdout.write(data);
 });
-
 webpackChild.stderr.on('exit', data => {
   process.stdout.write('im done');
-});
-
-//pass route an array of all routes from ribbit.routes
-app.get(routeArray, (req, res) => {
-  //bring in App from the file that ribbit webpack created
-  const App = require(`../dist/App.js`).default;
-  const context = {};
-  let url = req.url;
-
-  const jsx = (
-    <StaticRouter context={context} location={url}>
-      <App />
-    </StaticRouter>
-  );
-
-  //turn this into render to stream
-  //this is where jsx turns into html
-  const reactDom = renderToString(jsx);
-
-  //injects reactDom into html template
-  const html = htmlTemplate(reactDom);
-
-  //replaces slashes in the route with x's so we dont mess up file structure
-  //can change x to whatever we wantf
-  //test out creating file structure
-  // const file = url.replace(/\//g, 'x');
-
-  //write file to their file system
-  // dynamic file extensions for html
-  if (url === '/') url = 'Home';
-  else url = url.slice(1);
-
-  fs.writeFile(`${appDir}/ribbit.statics/${url}.html`, html, err => {
-    if (err) throw err;
-    //send file is just for our testing purposes
-    // res.sendFile(path.join(__dirname + `/../${url}.html`));
-    res.send('built static HTML');
-  });
-});
-
-app.use(express.static(ribbitConfig.root));
-
-// File name for bundle import needs to be dynamic (user input)
-// User can choose whether to split JS imports per route or
-// only use the main bundle
-function htmlTemplate(reactDom) {
-  return `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <title>React SSR</title>
-        </head>
-
-        <body>
-            <div id="app">${reactDom}</div>
-            <script src="${ribbitConfig.buildFolder}/main.js"></script>
-        </body>
-        </html>
-    `;
-}
-
-app.listen(4000, () => {
-  console.log('listening on port 4000');
 });
