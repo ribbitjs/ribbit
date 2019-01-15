@@ -1,6 +1,9 @@
 {
   "extends": ["airbnb", "prettier", "react-app", "plugin:prettier/recommended"],
   "plugins": ["prettier"],
+  "env": {
+    "node": true
+  },
   "rules": {
     "prettier/prettier": ["error"],
     "jsx-a11y/href-no-hash": [0],
