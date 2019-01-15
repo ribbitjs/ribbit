@@ -50,8 +50,7 @@ app.get(
   htmlTemplate,
   writeFile
 );
-
-app.use(express.static(ribbitConfig.root));
+app.use(express.static(ribbitConfig.bundleRoot));
 
 // Create a new child process, that executes the passed in 'cli command'
 // Child starts webpack and copies components over to the Ribbit directory
