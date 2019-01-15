@@ -1,7 +1,6 @@
 const path = require('path');
 
 module.exports = {
-  mode: 'development',
   output: {
     filename: './[name].js',
     libraryTarget: 'commonjs'
@@ -15,7 +14,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /.jsx?$/,
         exclude: [/node_modules/],
         use: {
           loader: 'babel-loader',

@@ -1,14 +1,12 @@
 const fsExtra = require('fs-extra');
 
-function writeFile(req, res, next) {
-  const { appDir, url, html } = res.locals;
+export function writeFile(req, res, next) {
+  const { appParentDirectory, componentRoute, html } = res.locals;
 
-  const file = `${appDir}/ribbit.statics/${url}`;
+  const file = `${appParentDirectory}/ribbit.statics/${componentRoute}`;
 
   fsExtra.outputFile(`${file}.html`, html, err => {
     if (err) console.log(err);
     res.end();
   });
 }
-
-module.exports = { writeFile };

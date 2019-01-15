@@ -1,6 +1,3 @@
-// {
-//     "presets": ["@babel/preset-env", "@babel/preset-react"]
-// }
 {
   "env": {
     "development": {
@@ -16,15 +13,7 @@
       ]
     },
     "production": {
-      "presets": ["@babel/preset-env", "@babel/preset-react"],
-      "plugins": ["@babel/plugin-syntax-dynamic-import"]
+      "presets": ["@babel/preset-env", "@babel/preset-react"]
     }
   }
 }
-// module.exports = function () {
-//     const presets = ["@babel/preset-env", "@babel/preset-react"];
-//     // const babelrcRoots = ["*"]
-//     return {
-//         presets
-//     }
-// }

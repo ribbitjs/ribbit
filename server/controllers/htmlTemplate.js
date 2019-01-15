@@ -4,9 +4,9 @@ const { StringDecoder } = require('string_decoder');
 
 const decoder = new StringDecoder('utf8');
 
-function htmlTemplate(req, res, next) {
-  const { appDir, url, jsx } = res.locals;
-  const ribbitConfig = require(path.join(appDir, '/ribbit.config.js'));
+export function htmlTemplate(req, res, next) {
+  const { appParentDirectory, componentRoute, jsx } = res.locals;
+  const ribbitConfig = require(path.join(appParentDirectory, '/ribbit.config.js'));
 
   const reactStream = renderToNodeStream(jsx);
 
@@ -25,16 +25,17 @@ function htmlTemplate(req, res, next) {
   
         <body>
             <div id="app">${reactDom}</div>
-            <script src="${ribbitConfig.buildFolder}/main.js"></script>
+            <script src="${ribbitConfig.bundleRoot}.js"></script>
         </body>
         </html>
     `;
 
-    res.locals.html = html;
-    res.locals.appDir = appDir;
-    res.locals.url = url;
+    res.locals = {
+      ...res.locals,
+      html,
+      appParentDirectory,
+      componentRoute
+    };
     next();
   });
 }
-
-module.exports = { htmlTemplate };
