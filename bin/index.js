@@ -2,9 +2,6 @@
 
 const program = require('commander');
 
-const { initialSetup } = require('../lib/inititalSetup');
-const { build } = require('../lib/build');
-
 program.version('1.0.0').description('Standalone serverside rendering CLI tool');
 const commands = require('../lib/index');
 
