@@ -1,4 +1,4 @@
-export function buildRoutesCliCommand(command, routes, appParentDirectory, appRoot) {
+function buildRoutesCliCommand(command, routes, appParentDirectory, appRoot) {
   let homeComponent;
   const appRootFile = appRoot ? `/${appRoot}` : '';
   routes.forEach(route => {
@@ -25,3 +25,5 @@ export function buildRoutesCliCommand(command, routes, appParentDirectory, appRo
   });
   return { command, homeComponent };
 }
+
+module.exports = buildRoutesCliCommand;

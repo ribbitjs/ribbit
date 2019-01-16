@@ -1,4 +1,4 @@
-export function sendFetches(routeConfig, port) {
+function sendFetches(routeConfig, port) {
   const routes = routeConfig.map(el => el.route);
   const fetches = [];
   routes.forEach(route => {
@@ -20,3 +20,5 @@ export function sendFetches(routeConfig, port) {
   });
   return fetches;
 }
+
+module.exports = sendFetches;

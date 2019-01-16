@@ -22,12 +22,12 @@ const ribbitRoutes = require(path.join(
 const appFile = `${appParentDirectory}/${ribbitConfig.appRoot}/${ribbitConfig.app}`;
 
 // Helper functions imports
-const { buildRoutesCliCommand } = require('./helpers/buildRoutesCliCommand');
-const { sendFetches } = require('./helpers/sendFetches');
+const buildRoutesCliCommand = require('./helpers/buildRoutesCliCommand');
+const sendFetches = require('./helpers/sendFetches');
 
 // Middleware imports
-const { htmlTemplate } = require('./controllers/htmlTemplate');
-const { writeFile } = require('./controllers/writeFile');
+const htmlTemplate = require('./controllers/htmlTemplate');
+const writeFile = require('./controllers/writeFile');
 
 const routeArray = ribbitRoutes.map(el => el.route);
 const webpackCommand = `npx webpack App=${appFile} `;
