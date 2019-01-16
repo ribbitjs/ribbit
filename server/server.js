@@ -5,6 +5,7 @@ const React = require('react');
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const { exec } = require('child_process');
 require('isomorphic-fetch');
 
@@ -33,7 +34,8 @@ const webpackCommand = `npx webpack App=${appFile} `;
 const routesCliCommand = buildRoutesCliCommand(
   webpackCommand,
   ribbitRoutes,
-  appParentDirectory
+  appParentDirectory,
+  ribbitConfig.appRoot
 );
 
 app.get(
@@ -69,8 +71,18 @@ const webpackChild = exec(`${routesCliCommand.command}`, () => {
     console.log('Listening on port 4000');
     // Send fetch request to all routes
     const fetchArray = sendFetches(ribbitRoutes, 4000);
+
     Promise.all(fetchArray)
-      .then(data => {
+      .then(arrayOfRoutes => {
+        const ribbitManifest = arrayOfRoutes.reduce((acc, curr) => {
+          acc[curr[0]] = curr[1];
+          return acc;
+        }, {});
+
+        fs.writeFileSync(
+          `${appParentDirectory}/ribbit.manifest.json`,
+          JSON.stringify(ribbitManifest)
+        );
         process.kill(process.pid, 'SIGINT');
       })
       .catch();
