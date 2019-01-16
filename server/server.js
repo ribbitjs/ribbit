@@ -5,6 +5,7 @@ const React = require('react');
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const { exec } = require('child_process');
 require('isomorphic-fetch');
 
@@ -21,19 +22,29 @@ const ribbitRoutes = require(path.join(
 const appFile = `${appParentDirectory}/${ribbitConfig.appRoot}/${ribbitConfig.app}`;
 
 // Helper functions imports
-const { buildRoutesCliCommand } = require('./helpers/buildRoutesCliCommand');
-const { sendFetches } = require('./helpers/sendFetches');
+const buildRoutesCliCommand = require('./helpers/buildRoutesCliCommand');
+const sendFetches = require('./helpers/sendFetches');
 
 // Middleware imports
-const { htmlTemplate } = require('./controllers/htmlTemplate');
-const { writeFile } = require('./controllers/writeFile');
+const htmlTemplate = require('./controllers/htmlTemplate');
+const writeFile = require('./controllers/writeFile');
 
 const routeArray = ribbitRoutes.map(el => el.route);
+
+//object with keys as routes and values as the corresponding asset name. used in write file.
+const routeAndAssetName = ribbitRoutes.reduce((acc, curr) => {
+  if (curr.assetName) {
+    acc[curr.route] = curr.assetName;
+  }
+  return acc;
+}, {});
+
 const webpackCommand = `npx webpack App=${appFile} `;
 const routesCliCommand = buildRoutesCliCommand(
   webpackCommand,
   ribbitRoutes,
-  appParentDirectory
+  appParentDirectory,
+  ribbitConfig.appRoot
 );
 
 app.get(
@@ -50,9 +61,14 @@ app.get(
     );
 
     if (componentRoute === '/') componentRoute = routesCliCommand.homeComponent;
-    res.locals.appParentDirectory = appParentDirectory;
-    res.locals.componentRoute = componentRoute;
-    res.locals.jsx = jsx;
+
+    res.locals = {
+      ...res.locals,
+      appParentDirectory,
+      componentRoute,
+      jsx,
+      routeAndAssetName
+    };
     next();
   },
   htmlTemplate,
@@ -69,8 +85,18 @@ const webpackChild = exec(`${routesCliCommand.command}`, () => {
     console.log('Listening on port 4000');
     // Send fetch request to all routes
     const fetchArray = sendFetches(ribbitRoutes, 4000);
+
     Promise.all(fetchArray)
-      .then(data => {
+      .then(arrayOfRoutes => {
+        const ribbitManifest = arrayOfRoutes.reduce((acc, curr) => {
+          acc[curr[0]] = curr[1];
+          return acc;
+        }, {});
+
+        fs.writeFileSync(
+          `${appParentDirectory}/ribbit.manifest.json`,
+          JSON.stringify(ribbitManifest)
+        );
         process.kill(process.pid, 'SIGINT');
       })
       .catch();

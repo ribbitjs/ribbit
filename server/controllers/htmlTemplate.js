@@ -4,7 +4,7 @@ const { StringDecoder } = require('string_decoder');
 
 const decoder = new StringDecoder('utf8');
 
-export function htmlTemplate(req, res, next) {
+function htmlTemplate(req, res, next) {
   const { appParentDirectory, componentRoute, jsx } = res.locals;
   const ribbitConfig = require(path.join(appParentDirectory, '/ribbit.config.js'));
 
@@ -39,3 +39,5 @@ export function htmlTemplate(req, res, next) {
     next();
   });
 }
+
+module.exports = htmlTemplate;
