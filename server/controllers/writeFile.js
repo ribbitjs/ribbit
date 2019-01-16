@@ -1,10 +1,18 @@
 const fsExtra = require('fs-extra');
 
 function writeFile(req, res, next) {
-  const { appParentDirectory, componentRoute, html } = res.locals;
+  const { appParentDirectory, componentRoute, html, routeAndAssetName } = res.locals;
+  let file;
+  let manifestPair;
 
-  const file = `${appParentDirectory}/ribbit.statics${componentRoute}`;
-  const manifestPair = [req.url, `ribbit.statics${componentRoute}`];
+  if (routeAndAssetName[req.url]) {
+    file = `${appParentDirectory}/ribbit.statics/${routeAndAssetName[req.url]}`;
+    manifestPair = [req.url, `ribbit.statics/${routeAndAssetName[req.url]}`];
+  } else {
+    file = `${appParentDirectory}/ribbit.statics${componentRoute}`;
+    manifestPair = [req.url, `ribbit.statics${componentRoute}`];
+  }
+
   fsExtra.outputFile(`${file}.html`, html, err => {
     if (err) console.log(err);
     res.send(manifestPair);

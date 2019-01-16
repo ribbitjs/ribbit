@@ -30,6 +30,15 @@ const htmlTemplate = require('./controllers/htmlTemplate');
 const writeFile = require('./controllers/writeFile');
 
 const routeArray = ribbitRoutes.map(el => el.route);
+
+//object with keys as routes and values as the corresponding asset name. used in write file.
+const routeAndAssetName = ribbitRoutes.reduce((acc, curr) => {
+  if (curr.assetName) {
+    acc[curr.route] = curr.assetName;
+  }
+  return acc;
+}, {});
+
 const webpackCommand = `npx webpack App=${appFile} `;
 const routesCliCommand = buildRoutesCliCommand(
   webpackCommand,
@@ -52,9 +61,14 @@ app.get(
     );
 
     if (componentRoute === '/') componentRoute = routesCliCommand.homeComponent;
-    res.locals.appParentDirectory = appParentDirectory;
-    res.locals.componentRoute = componentRoute;
-    res.locals.jsx = jsx;
+
+    res.locals = {
+      ...res.locals,
+      appParentDirectory,
+      componentRoute,
+      jsx,
+      routeAndAssetName
+    };
     next();
   },
   htmlTemplate,
