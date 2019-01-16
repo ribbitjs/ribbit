@@ -5,6 +5,12 @@ const commands = require('../lib/index');
 
 program.version('1.0.0').description('Standalone server side rendering CLI tool');
 
+program
+  .command('build')
+  .alias('b')
+  .description('Generate your static files')
+  .action(commands.build);
+
 /*
 // Command templte:
 program
