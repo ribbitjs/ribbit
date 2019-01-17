@@ -93,6 +93,8 @@ const webpackChild = exec(`${routesCliCommand.command}`, () => {
           return acc;
         }, {});
 
+        ribbitManifest.static = `${ribbitConfig.bundleRoot.slice(1)}`;
+
         fs.writeFileSync(
           `${appParentDirectory}/ribbit.manifest.json`,
           JSON.stringify(ribbitManifest)
