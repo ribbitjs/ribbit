@@ -13,10 +13,12 @@ const genWebpackConfig = ribbitConfig => {
     },`;
 
   for (const key in webpackSettings) {
-    finalWebpackString += `${key}: ${util.inspect(webpackSettings[key], {
-      showHidden: false,
-      depth: null
-    })},`;
+    if (key !== 'entry' && key !== 'output') {
+      finalWebpackString += `${key}: ${util.inspect(webpackSettings[key], {
+        showHidden: false,
+        depth: null
+      })},`;
+    }
   }
 
   finalWebpackString += `}`;
