@@ -75,12 +75,11 @@ app.get(
     //  user exports their store from wherever they created it
     // user must give the path to their store file
     const { store } = require(`../dist/App.js`);
+    // pull state out of store
+    const preLoadedState = store.getState();
 
     const context = { data: {}, head: [], req };
     let componentRoute = req.url;
-
-    // pull state out of store
-    const preLoadedState = store.getState();
 
     const jsx = (
       // wrap static router in redux Provider in order to user redux state
