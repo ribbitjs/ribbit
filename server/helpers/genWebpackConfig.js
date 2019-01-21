@@ -23,8 +23,6 @@ const genWebpackConfig = ribbitConfig => {
 
   finalWebpackString += `}`;
 
-  console.log('Final webpack string', finalWebpackString);
-
   fs.writeFileSync(localWebpackPath, finalWebpackString);
 };
 

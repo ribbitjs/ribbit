@@ -25,6 +25,7 @@ const appFile = `${appParentDirectory}/${ribbitConfig.appRoot}/${ribbitConfig.ap
 const buildRoutesCliCommand = require('./helpers/buildRoutesCliCommand');
 const sendFetches = require('./helpers/sendFetches');
 const linkUserDeps = require('./helpers/linkUserDeps');
+const unlinkUserDeps = require('./helpers/unlinkUserDeps');
 const genWebpackConfig = require('./helpers/genWebpackConfig');
 
 // Middleware imports
@@ -102,6 +103,7 @@ const webpackChild = exec(`${routesCliCommand.command}`, () => {
           `${appParentDirectory}/ribbit.manifest.json`,
           JSON.stringify(ribbitManifest)
         );
+        unlinkUserDeps(ribbitConfig, appParentDirectory);
         process.kill(process.pid, 'SIGINT');
       })
       .catch();
@@ -113,8 +115,8 @@ webpackChild.on('data', data => {
   process.stdout.write(data);
 });
 webpackChild.stderr.on('data', data => {
-  process.stdout.write(data);
+  console.error('Error in webpack child:', data);
 });
 webpackChild.stderr.on('exit', data => {
-  process.stdout.write('Static file generation was successful.');
+  console.error('Webpack child exited with error:', data);
 });
