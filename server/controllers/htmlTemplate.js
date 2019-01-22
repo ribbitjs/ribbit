@@ -18,7 +18,10 @@ function htmlTemplate(req, res, next) {
 
   // inject state into HTML template
   reactStream.on('end', () => {
-    const css = fs.readFile(path.resolve(__dirname, '../../dist/styles.min.css'), 'utf8', (err, data) => {
+    const css = fs.readFile(
+      path.resolve(__dirname, '../../dist/styles.min.css'),
+      'utf8',
+      (err, data) => {
         const criticalCSS = purifyCSS(reactDom, data);
         const html = `
           <!DOCTYPE html>
@@ -30,6 +33,9 @@ function htmlTemplate(req, res, next) {
           </head>
           <body>
           <div id="app">${reactDom}</div>
+          <script>
+          window.RIBBIT_PRELOADED_STATE = ${JSON.stringify(preLoadedState).replace(/</g)}
+          </script>
           <script src="${ribbitConfig.bundleRoot}.js"></script>
           </body>
           </html>
@@ -40,8 +46,9 @@ function htmlTemplate(req, res, next) {
           appParentDirectory,
           componentRoute
         };
-      next();
-    })
+        next();
+      }
+    );
   });
 }
 

@@ -1,6 +1,7 @@
 const fs = require('fs');
-const path = require('path');
 const util = require('util');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const extractCSS = new ExtractTextPlugin('styles.min.css');
 
 const genWebpackConfig = webpackSettings => {
   const localWebpackPath = `${process.env.PWD}/webpack.config.js`;
@@ -34,6 +35,12 @@ const genWebpackConfig = webpackSettings => {
     `;
   } else {
     for (const key in webpackSettings) {
+      if (key === 'module') {
+        webpackSettings[key].rules.push({
+          test: /\.css$/,
+          use: extractCSS.extract(['css-loader', 'postcss-loader'])
+        });
+      }
       if (key !== 'entry' && key !== 'output') {
         finalWebpackString += `${key}: ${util.inspect(webpackSettings[key], {
           showHidden: false,
@@ -41,14 +48,9 @@ const genWebpackConfig = webpackSettings => {
         })},`;
       }
     }
-    finalWebpackString.replace('rules: [', `rules: [{
-      test: /\.css$/,
-      use: extractCSS.extract(["css-loader", "postcss-loader"])
-    }`)
   }
 
-  finalWebpackString += `}`;
-
+  finalWebpackString += `plugins:[extractCSS]}`;
   fs.writeFileSync(localWebpackPath, finalWebpackString);
 };
 
