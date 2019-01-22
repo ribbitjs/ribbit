@@ -8,7 +8,7 @@
   },
   "main": "lib/index.js",
   "bin": "./bin/index.js",
-  "author": "Brian Hon, Malika Butler, Marlon Wiprud, Raphael Ram",
+  "author": "Brian Hon, Mrbut, Marlon Wiprud, Raphael Ram",
   "license": "MIT",
   "devDependencies": {
     "babel-eslint": "^9.0.0",
