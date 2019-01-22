@@ -6,7 +6,7 @@ const decoder = new StringDecoder('utf8');
 const purifyCSS = require('purify-css');
 
 function htmlTemplate(req, res, next) {
-  const { appParentDirectory, componentRoute, jsx } = res.locals;
+  const { appParentDirectory, componentRoute, jsx, preLoadedState } = res.locals;
   const ribbitConfig = require(path.join(appParentDirectory, '/ribbit.config.js'));
 
   const reactStream = renderToNodeStream(jsx);
@@ -15,6 +15,8 @@ function htmlTemplate(req, res, next) {
   reactStream.on('data', data => {
     reactDom += decoder.write(data);
   });
+
+  // inject state into HTML template
   reactStream.on('end', () => {
     const css = fs.readFile(path.resolve(__dirname, '../../dist/styles.min.css'), 'utf8', (err, data) => {
         const criticalCSS = purifyCSS(reactDom, data);
