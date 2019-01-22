@@ -143,5 +143,3 @@ webpackChild.stderr.on('data', data => {
 webpackChild.stderr.on('exit', data => {
   process.stdout.write('Static file generation was successful.');
 });
-
-// module.exports = hasPreloadRan;

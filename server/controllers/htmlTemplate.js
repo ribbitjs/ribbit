@@ -28,7 +28,9 @@ function htmlTemplate(req, res, next) {
         <body>
             <div id="root">${reactDom}</div>
             <script>
-             window.__PRELOADED_STATE__ = ${JSON.stringify(preLoadedState).replace(/</g)}
+             window.RIBBIT_PRELOADED_STATE = ${JSON.stringify(preLoadedState).replace(
+               /</g
+             )}
              </script>
             <script src="${ribbitConfig.bundle}"></script>
         </body>
