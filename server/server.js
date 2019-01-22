@@ -43,7 +43,7 @@ const routeAndAssetName = ribbitRoutes.reduce((acc, curr) => {
 }, {});
 
 linkUserDeps(ribbitConfig, appParentDirectory);
-genWebpackConfig(ribbitConfig);
+genWebpackConfig(ribbitConfig.webpackSettings);
 
 const webpackCommand = `npx webpack App=${appFile} `;
 const routesCliCommand = buildRoutesCliCommand(
