@@ -46,7 +46,6 @@ const routesCliCommand = buildRoutesCliCommand(
   appParentDirectory,
   ribbitConfig.appRoot
 );
-
 app.get(
   routeArray,
   (req, res, next) => {
