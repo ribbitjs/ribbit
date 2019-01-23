@@ -23,8 +23,6 @@ const appFile = `${appParentDirectory}/${ribbitConfig.appRoot}/${ribbitConfig.ap
 // Helper functions imports
 const buildRoutesCliCommand = require('./helpers/buildRoutesCliCommand');
 const sendFetches = require('./helpers/sendFetches');
-const linkUserDeps = require('./helpers/linkUserDeps');
-const unlinkUserDeps = require('./helpers/unlinkUserDeps');
 const genWebpackConfig = require('./helpers/genWebpackConfig');
 
 // Middleware imports
@@ -41,7 +39,6 @@ const routeAndAssetName = ribbitRoutes.reduce((acc, curr) => {
   return acc;
 }, {});
 
-linkUserDeps(ribbitConfig, appParentDirectory);
 genWebpackConfig(ribbitConfig.webpackSettings);
 
 const webpackCommand = `npx webpack App=${appFile} `;
