@@ -1,11 +1,15 @@
 const fs = require('fs');
-const path = require('path');
 const util = require('util');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const extractCSS = new ExtractTextPlugin('styles.min.css');
 
 const genWebpackConfig = webpackSettings => {
   const localWebpackPath = `${process.env.PWD}/webpack.config.js`;
 
-  let finalWebpackString = `module.exports = {
+  let finalWebpackString = `
+  const ExtractTextPlugin = require("extract-text-webpack-plugin");
+  const extractCSS = new ExtractTextPlugin("styles.min.css");
+  module.exports = {
     output: {
       filename: './[name].js',
       libraryTarget: 'commonjs'
@@ -21,12 +25,22 @@ const genWebpackConfig = webpackSettings => {
             loader: 'babel-loader',
             options: { presets: ['@babel/preset-env', '@babel/preset-react'] }
           }
+        },
+        {
+          test: /\.css$/,
+          use: extractCSS.extract(["css-loader", "postcss-loader"])
         }
       ]
     }
     `;
   } else {
     for (const key in webpackSettings) {
+      if (key === 'module') {
+        webpackSettings[key].rules.push({
+          test: /\.css$/,
+          use: extractCSS.extract(['css-loader', 'postcss-loader'])
+        });
+      }
       if (key !== 'entry' && key !== 'output') {
         finalWebpackString += `${key}: ${util.inspect(webpackSettings[key], {
           showHidden: false,
@@ -36,8 +50,7 @@ const genWebpackConfig = webpackSettings => {
     }
   }
 
-  finalWebpackString += `}`;
-
+  finalWebpackString += `plugins:[extractCSS]}`;
   fs.writeFileSync(localWebpackPath, finalWebpackString);
 };
 
