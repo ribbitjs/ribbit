@@ -2,11 +2,12 @@ const path = require('path');
 const { renderToNodeStream } = require('react-dom/server');
 const { StringDecoder } = require('string_decoder');
 const fs = require('fs');
-const decoder = new StringDecoder('utf8');
 const purifyCSS = require('purify-css');
 
+const decoder = new StringDecoder('utf8');
+
 function htmlTemplate(req, res, next) {
-  const { appParentDirectory, componentRoute, jsx, preLoadedState } = res.locals;
+  const { appParentDirectory, jsx, preLoadedState } = res.locals;
   const ribbitConfig = require(path.join(appParentDirectory, '/ribbit.config.js'));
 
   const reactStream = renderToNodeStream(jsx);
@@ -42,9 +43,7 @@ function htmlTemplate(req, res, next) {
           `;
         res.locals = {
           ...res.locals,
-          html,
-          appParentDirectory,
-          componentRoute
+          html
         };
         next();
       }

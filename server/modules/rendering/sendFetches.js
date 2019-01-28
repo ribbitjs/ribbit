@@ -4,9 +4,7 @@ function sendFetches(routeConfig, port) {
   routes.forEach(route => {
     const a = new Promise((resolve, reject) => {
       fetch(`http://localhost:${port}${route}`)
-        .then(routePair => {
-          return routePair.json();
-        })
+        .then(routePair => routePair.json())
         .then(routeJson => {
           resolve(routeJson);
         })

@@ -1,150 +1,87 @@
-// react imports
-import { StaticRouter } from 'react-router-dom';
-import { Provider } from 'react-redux';
-
-const React = require('react');
-const express = require('express');
-const path = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
+const express = require('express');
 require('isomorphic-fetch');
 const bodyParser = require('body-parser');
-// const hasPreloadRan = require('../lib/api/hasPreloadRan.js');
-
-const app = express();
-// User app directory is received from arguments
-const appParentDirectory = process.argv[2];
-const ribbitConfig = require(path.join(appParentDirectory, '/ribbit.config.js'));
-const ribbitRoutes = require(path.join(
-  appParentDirectory,
-  `${ribbitConfig.appRoot}/ribbit.routes.json`
-));
-const appFile = `${appParentDirectory}/${ribbitConfig.appRoot}/${ribbitConfig.app}`;
-// Helper functions imports
-const buildRoutesCliCommand = require('./helpers/buildRoutesCliCommand');
-const sendFetches = require('./helpers/sendFetches');
-const genWebpackConfig = require('./helpers/genWebpackConfig');
 
 // Middleware imports
-const htmlTemplate = require('./controllers/htmlTemplate');
-const writeFile = require('./controllers/writeFile');
+const { executeStream } = require('./middleware/executeStream');
+const { serializeData } = require('./middleware/serializeData');
+const renderHTML = require('./middleware/renderHTML');
+const renderStaticFiles = require('./middleware/renderStaticFiles');
 
-const routeArray = ribbitRoutes.map(el => el.route);
+const {
+  appFilePath,
+  config,
+  routes,
+  USER_PROJECT_DIRECTORY
+} = require('./consts/globals');
 
-//object with keys as routes and values as the corresponding asset name. used in write file.
-const routeAndAssetName = ribbitRoutes.reduce((acc, curr) => {
-  if (curr.assetName) {
-    acc[curr.route] = curr.assetName;
-  }
-  return acc;
-}, {});
+const globals = require('./consts/globals');
 
-genWebpackConfig(ribbitConfig.webpackSettings);
+// Phase imports
+const routing = require('./modules/routing');
+const { preloadData } = require('./modules/serializing');
+const { renderPort, writeStaticFiles } = require('./modules/rendering');
 
-const webpackCommand = `npx webpack App=${appFile} `;
-const routesCliCommand = buildRoutesCliCommand(
-  webpackCommand,
-  ribbitRoutes,
-  appParentDirectory,
-  ribbitConfig.appRoot
-);
+const genWebpackConfig = require('./modules/execution/genWebpackConfig'); // execution
 
-const preloadArray = [];
-
+const app = express();
 app.use(bodyParser.json());
 
-app.get(['/preload-push', '/preload-pop'], (req, res) => {
-  const arrayCommand = req.url.substring(req.url.lastIndexOf('-') + 1);
-  if (arrayCommand === 'push') {
-    preloadArray.push(1);
-    res.end();
-  } else if (arrayCommand === 'pop') {
-    preloadArray.pop();
-    res.end();
-  }
-});
+const buildRoutesCliCommand = require('./modules/execution/buildRoutesCliCommand'); // create webpack config
+
+// ROUTING
+// first param will receive getPhasePlugins('routing');
+const routesData = routing([], { routeArr: routes, config: globals });
+// ROUTING END!!!!
+
+// SERIALIZING
+const preloadArray = [];
+preloadData(app, preloadArray);
+// SERIEALIZING END!!!!
+
+genWebpackConfig(config.webpackSettings); // execution
+
+const webpackCommand = `npx webpack App=${appFilePath} `;
+const routesCliCommand = buildRoutesCliCommand(
+  webpackCommand,
+  routes,
+  USER_PROJECT_DIRECTORY,
+  config.appRoot
+);
 
 app.get(
-  routeArray,
+  routesData.routes,
   (req, res, next) => {
-    const CompiledApp = require(`../dist/App.js`).default;
-
-    //  user exports their store from wherever they created it
-    // user must give the path to their store file
-    const { store } = require(`../dist/App.js`);
-    // pull state out of store
-    const preLoadedState = store.getState();
-
-    const context = { data: {}, head: [], req };
-    let componentRoute = req.url;
-
-    const jsx = (
-      // wrap static router in redux Provider in order to user redux state
-      <Provider store={store}>
-        <StaticRouter context={context} location={componentRoute}>
-          <CompiledApp />
-        </StaticRouter>
-      </Provider>
-    );
-
-    if (componentRoute === '/') componentRoute = routesCliCommand.homeComponent;
-
     res.locals = {
-      ...res.locals,
-      preLoadedState,
-      appParentDirectory,
-      componentRoute,
-      jsx,
-      routeAndAssetName
+      routesCliCommand,
+      appParentDirectory: USER_PROJECT_DIRECTORY,
+      routeAndAssetName: routesData.assetRouteMap
     };
     next();
   },
-  htmlTemplate,
-  writeFile
+  serializeData,
+  executeStream,
+  renderHTML,
+  renderStaticFiles
 );
 
-app.use(express.static(ribbitConfig.bundleRoot));
+app.use(express.static(config.bundleRoot));
 
-const webpackChild = exec(`${routesCliCommand.command}`, () => {
-  app.listen(5000, () => {
-    console.log('Listening on port 5000');
-    const fetchArray = sendFetches(ribbitRoutes, 5000);
-    Promise.all(fetchArray)
-      .then(arrayOfRoutes => {
-        const ribbitManifest = arrayOfRoutes.reduce((acc, curr) => {
-          acc[curr[0]] = curr[1];
-          return acc;
-        }, {});
-
-        ribbitManifest.static = `${ribbitConfig.bundleRoot.slice(1)}`;
-
-        fs.writeFileSync(
-          `${appParentDirectory}/ribbit.manifest.json`,
-          JSON.stringify(ribbitManifest)
-        );
-
-        function killServer() {
-          if (preloadArray.length === 0) {
-            console.log('KILL THE SERVER GENTS!!!!');
-            process.kill(process.pid, 'SIGINT');
-          } else {
-            console.log('NOT READY TO KILL SERVER');
-            setTimeout(killServer, 500);
-          }
-        }
-        killServer();
-      })
-      .catch(err => console.log(err));
+const executeWebpack = exec(`${routesCliCommand.command}`, () => {
+  app.listen(renderPort, async () => {
+    writeStaticFiles(routes, renderPort, preloadArray);
   });
 });
 
 // We can remove these next 3 functions in production
-webpackChild.on('data', data => {
+executeWebpack.on('data', data => {
   process.stdout.write(data);
 });
-webpackChild.stderr.on('data', data => {
+executeWebpack.stderr.on('data', data => {
   console.error('Error in webpack child:', data);
 });
-webpackChild.stderr.on('exit', data => {
+executeWebpack.stderr.on('exit', data => {
   console.error('Webpack child exited with error:', data);
 });

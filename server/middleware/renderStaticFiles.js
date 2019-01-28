@@ -1,7 +1,12 @@
 const fsExtra = require('fs-extra');
 
-function writeFile(req, res, next) {
-  const { appParentDirectory, componentRoute, html, routeAndAssetName } = res.locals;
+function renderStaticFiles(req, res, next) {
+  const { appParentDirectory, html, routeAndAssetName, routesCliCommand } = res.locals;
+  let componentRoute = req.url;
+
+  if (req.url === '/') {
+    componentRoute = routesCliCommand.homeComponent;
+  }
   let file;
   let manifestPair;
 
@@ -19,4 +24,4 @@ function writeFile(req, res, next) {
   });
 }
 
-module.exports = writeFile;
+module.exports = renderStaticFiles;
