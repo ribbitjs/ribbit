@@ -13,7 +13,6 @@ function buildRoutesCliCommand(command, routes, appParentDirectory, appRoot) {
     }
   });
 
-  console.log(command);
   return { command, homeComponent };
 }
 

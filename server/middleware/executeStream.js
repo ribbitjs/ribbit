@@ -4,7 +4,11 @@ import { StaticRouter } from 'react-router-dom'; // react=router plugin
 import { Provider } from 'react-redux';
 
 const executeStream = (req, res, next) => {
-  const { routesCliCommand, clientData } = res.locals;
+  const {
+    routesCliCommand,
+    clientData: { store, window }
+  } = res.locals;
+
   const CompiledApp = require(`../../dist/App.js`).default;
   // console.log('COMPILED APP_____', CompiledApp);
 
@@ -19,7 +23,7 @@ const executeStream = (req, res, next) => {
 
   const jsx = (
     // wrap static router in redux Provider in order to user redux state
-    <Provider store={clientData.store}>
+    <Provider store={store}>
       <StaticRouter context={context} location={componentRoute}>
         <CompiledApp />
       </StaticRouter>

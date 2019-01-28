@@ -10,10 +10,8 @@ const buildAssetNameRoutesMap = routes =>
     return acc;
   }, {});
 
-// we should discuss post function
+// todo: set-up genPhasePlugins('routing', 'generateRoutes');
 const generateRoutes = (plugins, { routeArr = [], config = {}, ...data }) => {
-  // console.log('config______', config);
-
   if (!plugins.length > 0) {
     return {
       routes: buildRoutes(routeArr),
@@ -24,7 +22,6 @@ const generateRoutes = (plugins, { routeArr = [], config = {}, ...data }) => {
   const addPlugins = pipe(plugins);
 
   return addPlugins({
-    previousOutput: { routeArr, config, ...data },
     routeArr,
     config,
     ...data
