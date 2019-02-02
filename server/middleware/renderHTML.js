@@ -14,11 +14,14 @@ function htmlTemplate(req, res, next) {
   const templateDir = ribbitConfig.resolve_templates;
   const routeObj = ribbitRoutes.filter(routeObject => routeObject.route===req.url)
   const templateFile = routeObj[0].template;
-  console.log("****ribbitRoutes: ", ribbitRoutes);
-  console.log("templateDir: ", templateDir);
-  console.log("routeObj: ", routeObj);
-  console.log("templateFile: ", templateFile);
-
+  // console.log("****ribbitRoutes: ", ribbitRoutes);
+  // console.log("templateDir: ", templateDir);
+  // console.log("routeObj: ", routeObj);
+  // console.log("templateFile: ", templateFile);
+  const htmlTemplatePath = path.join(appParentDirectory, `${templateDir + '/' + templateFile}`)
+  // console.log("htmlTemplatePath: ", htmlTemplatePath);
+  let html = fs.readFileSync(htmlTemplatePath).toString('utf8');
+  // console.log("htmlTemplateContents: ", html);
   const reactStream = renderToNodeStream(jsx);
 
   let reactDom = '';
@@ -32,25 +35,28 @@ function htmlTemplate(req, res, next) {
       path.resolve(__dirname, '../../dist/styles.min.css'),
       'utf8',
       (err, data) => {
-        const criticalCSS = purifyCSS(reactDom, data);
+        const criticalCSS = `<style>${purifyCSS(reactDom, data)}</style>`;
         //
-        const html = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-          <meta charset="utf-8">
-          <title>React SSR</title>
-          <style>${criticalCSS}</style>
-          </head>
-          <body>
-          <div id="app">${reactDom}</div>
-          <script>
-          window.RIBBIT_PRELOADED_STATE = ${JSON.stringify(preLoadedState).replace(/</g)}
-          </script>
-          <script src="${ribbitConfig.bundleRoot}.js"></script>
-          </body>
-          </html>
-          `;
+        console.log("REACTDOM LINE40", reactDom);
+        html = html.replace('<!-- ribbit-css -->', criticalCSS);
+        html = html.replace('<!-- ribbit-bundle -->', reactDom);
+        // const html = `
+        //   <!DOCTYPE html>
+        //   <html>
+        //   <head>
+        //   <meta charset="utf-8">
+        //   <title>React SSR</title>
+        //   <style>${criticalCSS}</style>
+        //   </head>
+        //   <body>
+        //   <div id="app">${reactDom}</div>
+        //   <script>
+        //   window.RIBBIT_PRELOADED_STATE = ${JSON.stringify(preLoadedState).replace(/</g)}
+        //   </script>
+        //   <script src="${ribbitConfig.bundleRoot}.js"></script>
+        //   </body>
+        //   </html>
+        //   `;
         res.locals = {
           ...res.locals,
           html
