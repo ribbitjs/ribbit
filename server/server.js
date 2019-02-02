@@ -55,6 +55,10 @@ app.get(
   routesData.routes,
   (req, res, next) => {
     res.locals = {
+      currentRoute: routes.reduce((acc, route) => {
+        if (route.route === req.url) return route;
+        return acc;
+      }, ''),
       routesCliCommand,
       appParentDirectory: USER_PROJECT_DIRECTORY,
       routeAndAssetName: routesData.assetRouteMap
