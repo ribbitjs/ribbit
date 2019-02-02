@@ -6,9 +6,18 @@ const purifyCSS = require('purify-css');
 
 const decoder = new StringDecoder('utf8');
 
+const ribbitRoutes = require('../consts/globals').USER_RIBBIT_ROUTES;
+
 function htmlTemplate(req, res, next) {
   const { appParentDirectory, jsx, preLoadedState } = res.locals;
   const ribbitConfig = require(path.join(appParentDirectory, '/ribbit.config.js'));
+  const templateDir = ribbitConfig.resolve_templates;
+  const routeObj = ribbitRoutes.filter(routeObject => routeObject.route===req.url)
+  const templateFile = routeObj[0].template;
+  console.log("****ribbitRoutes: ", ribbitRoutes);
+  console.log("templateDir: ", templateDir);
+  console.log("routeObj: ", routeObj);
+  console.log("templateFile: ", templateFile);
 
   const reactStream = renderToNodeStream(jsx);
 
@@ -24,6 +33,7 @@ function htmlTemplate(req, res, next) {
       'utf8',
       (err, data) => {
         const criticalCSS = purifyCSS(reactDom, data);
+        //
         const html = `
           <!DOCTYPE html>
           <html>
