@@ -10,16 +10,15 @@ const executeStream = (req, res, next) => {
   } = res.locals;
 
   const CompiledApp = require(`../../dist/App.js`).default;
-  // console.log('COMPILED APP_____', CompiledApp);
 
-  //  user exports their store from wherever they created it
+  // user exports their store from wherever they created it
   // user must give the path to their store file
 
   // serialize w/ redux plugin
   // during execution of jsxCompose, redux requires a store be passed in
+
   const context = {};
-  let componentRoute = req.url;
-  if (componentRoute === '/') componentRoute = routesCliCommand.homeComponent;
+  const componentRoute = req.url;
 
   const jsx = (
     // wrap static router in redux Provider in order to user redux state

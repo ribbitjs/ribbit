@@ -7,27 +7,44 @@ const purifyCSS = require('purify-css');
 const decoder = new StringDecoder('utf8');
 
 const ribbitRoutes = require('../consts/globals').USER_RIBBIT_ROUTES;
+const {
+  generateDefaultTemplate,
+  generateTemplate
+} = require('../modules/rendering/generateTemplate');
 
 function htmlTemplate(req, res, next) {
   const { appParentDirectory, jsx, preLoadedState } = res.locals;
   const ribbitConfig = require(path.join(appParentDirectory, '/ribbit.config.js'));
-  const templateDir = ribbitConfig.resolve_templates;
-  const routeObj = ribbitRoutes.filter(routeObject => routeObject.route===req.url)
-  const templateFile = routeObj[0].template;
-  // console.log("****ribbitRoutes: ", ribbitRoutes);
-  // console.log("templateDir: ", templateDir);
-  // console.log("routeObj: ", routeObj);
-  // console.log("templateFile: ", templateFile);
-  const htmlTemplatePath = path.join(appParentDirectory, `${templateDir + '/' + templateFile}`)
-  // console.log("htmlTemplatePath: ", htmlTemplatePath);
-  let html = fs.readFileSync(htmlTemplatePath).toString('utf8');
-  // console.log("htmlTemplateContents: ", html);
+  const templateDir = ribbitConfig.resolve_templates || 'src/templates';
+  const routeObj = ribbitRoutes.filter(routeObject => routeObject.route === req.url);
+  const templateFile = routeObj[0].template || 'template.html';
+  const htmlTemplatePath = path.join(
+    appParentDirectory,
+    `${templateDir + '/' + templateFile}`
+  );
+  let html;
+  if (fs.existsSync(htmlTemplatePath)) {
+    html = fs.readFileSync(htmlTemplatePath).toString('utf8');
+  } else {
+    html = generateDefaultTemplate();
+  }
   const reactStream = renderToNodeStream(jsx);
 
   let reactDom = '';
   reactStream.on('data', data => {
     reactDom += decoder.write(data);
   });
+
+  const currentComponentPath = `${appParentDirectory}/${
+    ribbitConfig.appRoot
+  }/${routeObj[0].component.slice(2)}`;
+
+  const pathToComponent = routeObj[0].route.split('/');
+  pathToComponent.pop();
+  const componentNameArray = routeObj[0].component.split('/');
+  const componentName = componentNameArray[componentNameArray.length - 1];
+  const finalComponentPath = `/dist${pathToComponent.join('/')}/${componentName}`;
+  const { context } = require(path.join(process.env.PWD, finalComponentPath));
 
   // inject state into HTML template
   reactStream.on('end', () => {
@@ -36,27 +53,17 @@ function htmlTemplate(req, res, next) {
       'utf8',
       (err, data) => {
         const criticalCSS = `<style>${purifyCSS(reactDom, data)}</style>`;
-        //
-        console.log("REACTDOM LINE40", reactDom);
         html = html.replace('<!-- ribbit-css -->', criticalCSS);
         html = html.replace('<!-- ribbit-bundle -->', reactDom);
-        // const html = `
-        //   <!DOCTYPE html>
-        //   <html>
-        //   <head>
-        //   <meta charset="utf-8">
-        //   <title>React SSR</title>
-        //   <style>${criticalCSS}</style>
-        //   </head>
-        //   <body>
-        //   <div id="app">${reactDom}</div>
-        //   <script>
-        //   window.RIBBIT_PRELOADED_STATE = ${JSON.stringify(preLoadedState).replace(/</g)}
-        //   </script>
-        //   <script src="${ribbitConfig.bundleRoot}.js"></script>
-        //   </body>
-        //   </html>
-        //   `;
+        html = html.replace(
+          '<!--ribbit-scripts-->',
+          `<script src="${ribbitConfig.bundleRoot}.js"></script>`
+        );
+
+        for (const property in context) {
+          html = html.replace(`{{${property}}}`, context[property]);
+        }
+
         res.locals = {
           ...res.locals,
           html

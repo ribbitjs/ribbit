@@ -1,14 +1,12 @@
-const generateDefaultTemplate = (css, DOM, state, bundle) => `
+const generateDefaultTemplate = () => `
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
-<title>{{ title }}</title>
-{{ meta }}
-<style>${css}</style>
+<!-- ribbit-css -->
 </head>
 <body>
-<div id="app"><!--ribbit-output--></div>
+<div id="app"><!-- ribbit-bundle --></div>
 <!--ribbit-scripts-->
 </body>
 </html>
