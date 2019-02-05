@@ -21,8 +21,7 @@ const generateRoutes = (plugins, { routeArr = [], config = {}, ...data }) => {
 
   const addPlugins = pipe(plugins);
 
-  return addPlugins({
-    routeArr,
+  return addPlugins(routeArr, {
     config,
     ...data
   });

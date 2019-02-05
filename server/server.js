@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const { exec } = require('child_process');
 const express = require('express');
 require('isomorphic-fetch');
@@ -30,10 +31,24 @@ const app = express();
 app.use(bodyParser.json());
 
 const buildRoutesCliCommand = require('./modules/execution/buildRoutesCliCommand'); // create webpack config
+const { getPlugins } = require('./utils');
+const preset = require(path.resolve(__dirname, `modules/presets/${config.preset}`));
+
+// Get phase plugins
+let phasePlugins = {};
+if (config.plugins.length > 0) {
+  phasePlugins = getPlugins({ pluginsArr: config.plugins, USER_PROJECT_DIRECTORY });
+}
 
 // ROUTING
 // first param will receive getPhasePlugins('routing');
-const routesData = routing([], { routeArr: routes, config: globals });
+const routesData = routing(
+  phasePlugins && phasePlugins.routing ? phasePlugins.routing : [],
+  {
+    routeArr: routes,
+    config: globals
+  }
+);
 // ROUTING END!!!!
 
 // SERIALIZING
@@ -55,9 +70,12 @@ app.get(
   routesData.routes,
   (req, res, next) => {
     res.locals = {
-      routesCliCommand,
       appParentDirectory: USER_PROJECT_DIRECTORY,
-      routeAndAssetName: routesData.assetRouteMap
+      config,
+      phasePlugins,
+      preset,
+      routeAndAssetName: routesData.assetRouteMap,
+      routesCliCommand
     };
     next();
   },

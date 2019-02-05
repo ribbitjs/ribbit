@@ -14,7 +14,7 @@
      { test: /\.css$/,
        use:
         [ { loader:
-             '/Users/brianhon/github/Projects/ribbit/node_modules/extract-text-webpack-plugin/dist/loader.js',
+             '/Users/butlerm/Documents/code-smith/production-project/ribbit/node_modules/extract-text-webpack-plugin/dist/loader.js',
             options: { id: 1, omit: 0, remove: true } },
           { loader: 'css-loader' },
           { loader: 'postcss-loader' } ] } ] },plugins:[extractCSS]}

@@ -5,12 +5,30 @@ import { Provider } from 'react-redux';
 
 const executeStream = (req, res, next) => {
   const {
-    routesCliCommand,
-    clientData: { store, window }
+    appParentDirectory,
+    clientData: { store, window },
+    config,
+    phasePlugins,
+    preset
   } = res.locals;
 
   const CompiledApp = require(`../../dist/App.js`).default;
+  // console.log(preset);
+  if (preset.execution) {
+    // console.log(preset.execution);
+    preset.execution.forEach(presetMap => {
+      const { presetName, presetFn } = presetMap;
 
+      res.locals[presetName] = presetFn(phasePlugins.execution[presetName], CompiledApp, {
+        req,
+        res,
+        store,
+        window,
+        appParentDirectory,
+        config
+      });
+    });
+  }
   // user exports their store from wherever they created it
   // user must give the path to their store file
 
