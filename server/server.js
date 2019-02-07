@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 const express = require('express');
@@ -10,15 +9,9 @@ const { executeStream } = require('./middleware/executeStream');
 const { serializeData } = require('./middleware/serializeData');
 const renderHTML = require('./middleware/renderHTML');
 const renderStaticFiles = require('./middleware/renderStaticFiles');
-
-const {
-  appFilePath,
-  config,
-  routes,
-  USER_PROJECT_DIRECTORY
-} = require('./consts/globals');
-
 const globals = require('./consts/globals');
+
+const { appFilePath, config, routes, USER_PROJECT_DIRECTORY } = globals;
 
 // Phase imports
 const routing = require('./modules/routing');
@@ -95,11 +88,11 @@ const executeWebpack = exec(`${routesCliCommand.command}`, () => {
 
 // We can remove these next 3 functions in production
 executeWebpack.on('data', data => {
-  process.stdout.write(data);
+  // process.stdout.write(data);
 });
 executeWebpack.stderr.on('data', data => {
-  console.error('Error in webpack child:', data);
+  console.error('Error in build process...');
 });
 executeWebpack.stderr.on('exit', data => {
-  console.error('Webpack child exited with error:', data);
+  console.error('Error in build process...');
 });

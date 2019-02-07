@@ -5,16 +5,15 @@
     output: {
       filename: './[name].js',
       libraryTarget: 'commonjs'
-    },module: { rules:
+    },module: { rules: 
    [ { test: /\.js$/,
        exclude: [ /node_modules/ ],
-       use:
+       use: 
         { loader: 'babel-loader',
           options: { presets: [ '@babel/preset-env', '@babel/preset-react' ] } } },
      { test: /\.css$/,
-       use:
-        [ { loader:
-             '/Users/butlerm/Documents/code-smith/production-project/ribbit/node_modules/extract-text-webpack-plugin/dist/loader.js',
+       use: 
+        [ { loader: '/home/marlon/Desktop/ribbit/node_modules/extract-text-webpack-plugin/dist/loader.js',
             options: { id: 1, omit: 0, remove: true } },
           { loader: 'css-loader' },
           { loader: 'postcss-loader' } ] } ] },plugins:[extractCSS]}

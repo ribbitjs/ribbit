@@ -12,10 +12,9 @@ const executeStream = (req, res, next) => {
     preset
   } = res.locals;
 
-  const CompiledApp = require(`../../dist/App.js`).default;
-  // console.log(preset);
+  const CompiledApp = require(`../../dist/App`).default;
+
   if (preset.execution) {
-    // console.log(preset.execution);
     preset.execution.forEach(presetMap => {
       const { presetName, presetFn } = presetMap;
 
@@ -29,17 +28,11 @@ const executeStream = (req, res, next) => {
       });
     });
   }
-  // user exports their store from wherever they created it
-  // user must give the path to their store file
-
-  // serialize w/ redux plugin
-  // during execution of jsxCompose, redux requires a store be passed in
 
   const context = {};
   const componentRoute = req.url;
 
   const jsx = (
-    // wrap static router in redux Provider in order to user redux state
     <Provider store={store}>
       <StaticRouter context={context} location={componentRoute}>
         <CompiledApp />

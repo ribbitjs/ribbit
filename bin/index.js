@@ -11,17 +11,6 @@ program
   .description('Generate your static files')
   .action(commands.build);
 
-/*
-// Command templte:
-program
-  .command('update <_id>')
-  .alias('u')
-  .description('Update a customer')
-  .action(_id => {
-    prompt(questions).then(answers => updateCustomer(_id, answers));
-  });
-*/
-
 program
   .command('init')
   .option('-css, --css [cssFormat]', 'internal, external, inline')
@@ -35,13 +24,6 @@ program
       view,
       images: { prefetchImg }
     });
-  });
-
-program
-  .command('add-workspace')
-  .description('Set-up a new workspace')
-  .action(() => {
-    console.log('New workspace builder');
   });
 
 program.parse(process.argv);

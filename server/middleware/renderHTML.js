@@ -14,8 +14,7 @@ const {
 
 function htmlTemplate(req, res, next) {
   const { appParentDirectory, jsx, jsxCompose, preLoadedState } = res.locals;
-  console.log('JSX COMPOSE_______________________________', jsxCompose);
-  console.log('JSX_______________________________', jsx);
+
   const ribbitConfig = require(path.join(appParentDirectory, '/ribbit.config.js'));
   const templateDir = ribbitConfig.resolve_templates || 'src/templates';
   const routeObj = ribbitRoutes.filter(routeObject => routeObject.route === req.url);
@@ -30,10 +29,6 @@ function htmlTemplate(req, res, next) {
   } else {
     html = generateDefaultTemplate();
   }
-  // const testing = renderToNodeStream(jsxCompose);
-  // testing.on('data', data => {
-  //   console.log(data);
-  // });
   const reactStream = renderToNodeStream(jsxCompose);
 
   let reactDom = '';

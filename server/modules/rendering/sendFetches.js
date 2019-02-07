@@ -9,7 +9,9 @@ function sendFetches(routeConfig, port) {
           resolve(routeJson);
         })
         .catch(error => {
-          console.error('Error fetching from local server: ', error);
+          console.error('Error in build process...');
+          process.kill(process.pid, 'SIGINT');
+
           reject();
         });
     });

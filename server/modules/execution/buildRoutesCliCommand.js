@@ -12,7 +12,6 @@ function buildRoutesCliCommand(command, routes, appParentDirectory, appRoot) {
       command += buildPair(route.route, filePath, route.component);
     }
   });
-
   return { command, homeComponent };
 }
 
