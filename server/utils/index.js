@@ -1,6 +1,6 @@
 const path = require('path');
 
-const composeFns = (f, g) => (arg, config) => f(g(arg, config), config);
+const composeFns = (f, g) => arg => f(g(arg));
 
 const getPlugins = ({ pluginsArr, USER_PROJECT_DIRECTORY }) =>
   pluginsArr.reduce((acc, currPlugin) => {
