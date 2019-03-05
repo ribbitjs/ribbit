@@ -1,20 +1,15 @@
 #!/usr/bin/env node
 
-'use strict';
-
 const program = require('commander');
+const commands = require('../lib/index');
 
-const { initialSetup } = require('../lib/controller');
+program.version('1.0.0').description('Standalone server side rendering CLI tool');
 
-/* - Setting up default config file for React Cherry
-	- Be sure to check .react-cherry.config and add your entry point
-	- Once you're ready, run 'reactcherry build' to generate your static files	*/
-
-program.version('1.0.0').description('Standalone serverside rendering CLI tool');
-
-if (process.argv.length <= 2) {
-  initialSetup();
-}
+program
+  .command('build')
+  .alias('b')
+  .description('Generate your static files')
+  .action(commands.build);
 
 /*
 // Command templte:
@@ -26,5 +21,27 @@ program
     prompt(questions).then(answers => updateCustomer(_id, answers));
   });
 */
+
+program
+  .command('init')
+  .option('-css, --css [cssFormat]', 'internal, external, inline')
+  .option('-v, --view [viewFormat]', 'html, phtml')
+  .option('-p, --prefetch-img', 'Prefetch images')
+  .description('Create Ribbit routes and config files')
+  .action(args => {
+    const { css, view, prefetchImg = false } = args;
+    commands.init({
+      css,
+      view,
+      images: { prefetchImg }
+    });
+  });
+
+program
+  .command('add-workspace')
+  .description('Set-up a new workspace')
+  .action(() => {
+    console.log('New workspace builder');
+  });
 
 program.parse(process.argv);
